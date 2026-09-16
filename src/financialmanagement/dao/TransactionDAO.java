@@ -340,6 +340,72 @@ public class TransactionDAO {
         return summary;
     }
 
+    public Map<Integer, double[]> getYearlyMonthlySummary(int year) {
+        // Map: Month (1-12) -> [Total Income, Total Expense]
+        Map<Integer, double[]> map = new LinkedHashMap<>();
+        for (int m = 1; m <= 12; m++) {
+            map.put(m, new double[]{0.0, 0.0});
+        }
+
+        String yearStr = String.valueOf(year);
+        String sql = """
+            SELECT CAST(strftime('%m', transaction_date) AS INTEGER) AS month, 
+                   type, 
+                   SUM(amount) AS total
+            FROM transactions
+            WHERE strftime('%Y', transaction_date) = ? AND type IN ('INCOME', 'EXPENSE')
+            GROUP BY month, type
+        """;
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, yearStr);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int m = rs.getInt("month");
+                    String type = rs.getString("type");
+                    double total = rs.getDouble("total");
+                    double[] arr = map.get(m);
+                    if (arr != null) {
+                        if ("INCOME".equalsIgnoreCase(type)) {
+                            arr[0] = total;
+                        } else if ("EXPENSE".equalsIgnoreCase(type)) {
+                            arr[1] = total;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi getYearlyMonthlySummary: " + e.getMessage());
+        }
+        return map;
+    }
+
+    public Map<String, Double> getYearlyExpenseByCategory(int year) {
+        Map<String, Double> result = new LinkedHashMap<>();
+        String yearStr = String.valueOf(year);
+        String sql = """
+            SELECT c.name, SUM(t.amount) AS total
+            FROM transactions t
+            JOIN categories c ON t.category_id = c.id
+            WHERE t.type = 'EXPENSE' AND strftime('%Y', t.transaction_date) = ?
+            GROUP BY c.id, c.name
+            ORDER BY total DESC
+        """;
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, yearStr);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString("name"), rs.getDouble("total"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi getYearlyExpenseByCategory: " + e.getMessage());
+        }
+        return result;
+    }
+
+
     private Transaction mapResultSetToTransaction(ResultSet rs) throws SQLException {
         Transaction tx = new Transaction();
         tx.setId(rs.getInt("id"));

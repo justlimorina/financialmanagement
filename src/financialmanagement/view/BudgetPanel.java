@@ -2,6 +2,7 @@ package financialmanagement.view;
 
 import financialmanagement.dao.BudgetDAO;
 import financialmanagement.model.Budget;
+import financialmanagement.util.AppFont;
 import financialmanagement.util.CurrencyFormatter;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class BudgetPanel extends JPanel {
         this.onDataChangedCallback = onDataChangedCallback;
 
         setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(16, 20, 16, 20));
 
         initComponents();
         refreshData();
@@ -42,13 +43,13 @@ public class BudgetPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 2));
         titleBox.setOpaque(false);
         JLabel lblTitle = new JLabel("Kế Hoạch Ngân Sách");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(AppFont.bold(21));
 
         JLabel lblSub = new JLabel("Kiểm soát hạn mức chi tiêu hàng tháng theo từng danh mục");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setFont(AppFont.plain(12));
         lblSub.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         titleBox.add(lblTitle);
@@ -72,7 +73,7 @@ public class BudgetPanel extends JPanel {
         controls.add(spYear);
 
         JButton btnAddBudget = new JButton("+ Đặt Hạn Mức");
-        btnAddBudget.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAddBudget.setFont(AppFont.bold(13));
         btnAddBudget.putClientProperty("JButton.buttonType", "roundRect");
         btnAddBudget.setBackground(new Color(33, 150, 243));
         btnAddBudget.setForeground(Color.WHITE);
@@ -102,14 +103,14 @@ public class BudgetPanel extends JPanel {
         statsRow.setOpaque(false);
 
         lblTotalBudget = new JLabel("Tổng ngân sách: 0 ₫");
-        lblTotalBudget.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblTotalBudget.setFont(AppFont.bold(15));
 
         lblTotalSpent = new JLabel("Đã chi: 0 ₫");
-        lblTotalSpent.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblTotalSpent.setFont(AppFont.bold(15));
         lblTotalSpent.setForeground(new Color(244, 67, 54));
 
         lblTotalRemaining = new JLabel("Còn lại: 0 ₫");
-        lblTotalRemaining.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblTotalRemaining.setFont(AppFont.bold(15));
         lblTotalRemaining.setForeground(new Color(76, 175, 80));
 
         statsRow.add(lblTotalBudget);
@@ -180,7 +181,7 @@ public class BudgetPanel extends JPanel {
 
         if (budgets.isEmpty()) {
             JLabel lblEmpty = new JLabel("Chưa có hạn mức nào được thiết lập cho Tháng " + month + "/" + year, SwingConstants.CENTER);
-            lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+            lblEmpty.setFont(AppFont.italic(14));
             lblEmpty.setForeground(UIManager.getColor("Label.disabledForeground"));
             lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
             lblEmpty.setBorder(new EmptyBorder(40, 0, 0, 0));
@@ -204,7 +205,7 @@ public class BudgetPanel extends JPanel {
         top.setOpaque(false);
 
         JLabel lblName = new JLabel(budget.getCategoryName());
-        lblName.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblName.setFont(AppFont.bold(14));
 
         JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightBox.setOpaque(false);
@@ -213,11 +214,11 @@ public class BudgetPanel extends JPanel {
                 CurrencyFormatter.formatVND(budget.getSpentAmount()),
                 CurrencyFormatter.formatVND(budget.getAmountLimit()),
                 budget.getProgressPercentage()));
-        lblAmounts.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblAmounts.setFont(AppFont.bold(13));
 
-        JButton btnEdit = new JButton("✏️");
+        JButton btnEdit = new JButton("Sửa");
         btnEdit.setToolTipText("Sửa hạn mức");
-        btnEdit.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnEdit.setFont(AppFont.plain(12));
         btnEdit.putClientProperty("JButton.buttonType", "roundRect");
         btnEdit.addActionListener(e -> {
             BudgetDialog dialog = new BudgetDialog(parentFrame, budget, budget.getMonth(), budget.getYear(), () -> {
@@ -227,9 +228,9 @@ public class BudgetPanel extends JPanel {
             dialog.setVisible(true);
         });
 
-        JButton btnDelete = new JButton("🗑️");
+        JButton btnDelete = new JButton("Xóa");
         btnDelete.setToolTipText("Xóa ngân sách");
-        btnDelete.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnDelete.setFont(AppFont.plain(12));
         btnDelete.putClientProperty("JButton.buttonType", "roundRect");
         btnDelete.setForeground(new Color(211, 47, 47));
         btnDelete.addActionListener(e -> deleteBudget(budget));

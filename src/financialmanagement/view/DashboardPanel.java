@@ -6,7 +6,9 @@ import financialmanagement.dao.WalletDAO;
 import financialmanagement.model.Budget;
 import financialmanagement.model.Transaction;
 import financialmanagement.model.TransactionType;
+import financialmanagement.util.AppFont;
 import financialmanagement.util.CurrencyFormatter;
+import financialmanagement.util.IconHelper;
 import financialmanagement.view.components.CardPanel;
 
 import org.jfree.chart.ChartFactory;
@@ -43,33 +45,38 @@ public class DashboardPanel extends JPanel {
 
     public DashboardPanel(Frame parentFrame) {
         this.parentFrame = parentFrame;
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setLayout(new BorderLayout());
 
         initComponents();
         refreshData();
     }
 
     private void initComponents() {
-        // 1. Header (Title + Quick Action Button)
+        // Content container inside JScrollPane for responsive display on 1366x768
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(new EmptyBorder(16, 20, 16, 20));
+
+        // 1. Header (Greeting + Quick Action)
         JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         headerPanel.setOpaque(false);
 
-        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 3));
         titleBox.setOpaque(false);
         JLabel lblGreeting = new JLabel("Tổng quan Tài chính");
-        lblGreeting.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblGreeting.setFont(AppFont.bold(23));
 
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("'Hôm nay,' EEEE, dd/MM/yyyy"));
         JLabel lblDate = new JLabel(dateStr);
-        lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblDate.setFont(AppFont.plain(13));
         lblDate.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         titleBox.add(lblGreeting);
         titleBox.add(lblDate);
 
         JButton btnAddTransaction = new JButton("+ Thêm Giao Dịch");
-        btnAddTransaction.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAddTransaction.setFont(AppFont.bold(13));
         btnAddTransaction.putClientProperty("JButton.buttonType", "roundRect");
         btnAddTransaction.setBackground(new Color(33, 150, 243));
         btnAddTransaction.setForeground(Color.WHITE);
@@ -81,46 +88,56 @@ public class DashboardPanel extends JPanel {
 
         headerPanel.add(titleBox, BorderLayout.WEST);
         headerPanel.add(btnAddTransaction, BorderLayout.EAST);
+        content.add(headerPanel);
+        content.add(Box.createVerticalStrut(14));
 
         // 2. Metrics Cards (Grid 1x3)
-        JPanel cardsGrid = new JPanel(new GridLayout(1, 3, 15, 0));
+        JPanel cardsGrid = new JPanel(new GridLayout(1, 3, 14, 0));
+        cardsGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 125));
         cardsGrid.setOpaque(false);
 
-        cardTotal = new CardPanel("Tổng tài sản", "0 ₫", "Tất cả các ví", new Color(33, 150, 243), "💰");
-        cardIncome = new CardPanel("Thu nhập tháng này", "0 ₫", "Tháng hiện tại", new Color(76, 175, 80), "📈");
-        cardExpense = new CardPanel("Chi tiêu tháng này", "0 ₫", "Tháng hiện tại", new Color(244, 67, 54), "📉");
+        cardTotal = new CardPanel("Tổng tài sản", "0 ₫", "Tất cả các ví", new Color(33, 150, 243), IconHelper.ACCOUNT_BALANCE_WALLET);
+        cardIncome = new CardPanel("Thu nhập tháng này", "0 ₫", "Tháng hiện tại", new Color(76, 175, 80), IconHelper.TRENDING_UP);
+        cardExpense = new CardPanel("Chi tiêu tháng này", "0 ₫", "Tháng hiện tại", new Color(244, 67, 54), IconHelper.TRENDING_DOWN);
 
         cardsGrid.add(cardTotal);
         cardsGrid.add(cardIncome);
         cardsGrid.add(cardExpense);
+        content.add(cardsGrid);
+        content.add(Box.createVerticalStrut(14));
 
-        // Gom Header + Cards vào North Panel
-        JPanel northPanel = new JPanel(new BorderLayout(0, 15));
-        northPanel.setOpaque(false);
-        northPanel.add(headerPanel, BorderLayout.NORTH);
-        northPanel.add(cardsGrid, BorderLayout.CENTER);
-
-        add(northPanel, BorderLayout.NORTH);
-
-        // 3. Center Section: Left (Pie Chart) + Right (Budget Progress)
-        JPanel middlePanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        // 3. Middle Section: Chart Card + Budget Card
+        JPanel middlePanel = new JPanel(new GridLayout(1, 2, 14, 0));
+        middlePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
+        middlePanel.setPreferredSize(new Dimension(800, 250));
         middlePanel.setOpaque(false);
 
+        // Chart Card
+        JPanel chartCard = createSectionCard("Cơ cấu Chi tiêu Tháng Này");
         chartContainer = new JPanel(new BorderLayout());
-        chartContainer.setBorder(BorderFactory.createTitledBorder("Cơ cấu Chi tiêu Tháng Này"));
-        chartContainer.setPreferredSize(new Dimension(380, 240));
+        chartContainer.setOpaque(false);
+        chartCard.add(chartContainer, BorderLayout.CENTER);
 
+        // Budget Card
+        JPanel budgetCard = createSectionCard("Tiến độ Ngân sách Tháng Này");
         budgetContainer = new JPanel();
         budgetContainer.setLayout(new BoxLayout(budgetContainer, BoxLayout.Y_AXIS));
-        budgetContainer.setBorder(BorderFactory.createTitledBorder("Tiến độ Ngân sách Tháng Này"));
+        budgetContainer.setOpaque(false);
+        JScrollPane budgetScroll = new JScrollPane(budgetContainer);
+        budgetScroll.setBorder(null);
+        budgetScroll.setOpaque(false);
+        budgetScroll.getViewport().setOpaque(false);
+        budgetCard.add(budgetScroll, BorderLayout.CENTER);
 
-        middlePanel.add(chartContainer);
-        middlePanel.add(new JScrollPane(budgetContainer));
+        middlePanel.add(chartCard);
+        middlePanel.add(budgetCard);
+        content.add(middlePanel);
+        content.add(Box.createVerticalStrut(14));
 
         // 4. Bottom Section: Recent Transactions Table
-        JPanel bottomPanel = new JPanel(new BorderLayout(0, 8));
-        bottomPanel.setOpaque(false);
-        bottomPanel.setBorder(BorderFactory.createTitledBorder("Giao dịch gần đây"));
+        JPanel tableCard = createSectionCard("Giao dịch gần đây");
+        tableCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+        tableCard.setPreferredSize(new Dimension(800, 200));
 
         String[] columns = {"Ngày", "Loại", "Danh mục", "Ví", "Số tiền", "Ghi chú"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -131,12 +148,11 @@ public class DashboardPanel extends JPanel {
         };
 
         recentTable = new JTable(tableModel);
-        recentTable.setRowHeight(32);
-        recentTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        recentTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        recentTable.setRowHeight(34);
+        recentTable.setFont(AppFont.plain(13));
+        recentTable.getTableHeader().setFont(AppFont.bold(13));
         recentTable.setFillsViewportHeight(true);
 
-        // Center align & color for amount column
         recentTable.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -155,16 +171,29 @@ public class DashboardPanel extends JPanel {
         });
 
         JScrollPane scrollTable = new JScrollPane(recentTable);
-        scrollTable.setPreferredSize(new Dimension(800, 180));
-        bottomPanel.add(scrollTable, BorderLayout.CENTER);
+        scrollTable.setBorder(null);
+        tableCard.add(scrollTable, BorderLayout.CENTER);
 
-        // Center Wrapper containing middlePanel & bottomPanel
-        JPanel centerWrapper = new JPanel(new BorderLayout(0, 15));
-        centerWrapper.setOpaque(false);
-        centerWrapper.add(middlePanel, BorderLayout.CENTER);
-        centerWrapper.add(bottomPanel, BorderLayout.SOUTH);
+        content.add(tableCard);
 
-        add(centerWrapper, BorderLayout.CENTER);
+        // Wrap everything in a smooth vertical JScrollPane
+        JScrollPane mainScroll = new JScrollPane(content);
+        mainScroll.setBorder(null);
+        mainScroll.getVerticalScrollBar().setUnitIncrement(16);
+        add(mainScroll, BorderLayout.CENTER);
+    }
+
+    private JPanel createSectionCard(String title) {
+        JPanel card = new JPanel(new BorderLayout(0, 10));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1, true),
+                new EmptyBorder(12, 14, 12, 14)
+        ));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(AppFont.bold(15));
+        card.add(lblTitle, BorderLayout.NORTH);
+        return card;
     }
 
     public void refreshData() {
@@ -196,7 +225,7 @@ public class DashboardPanel extends JPanel {
 
         if (expenseData.isEmpty()) {
             JLabel lblEmpty = new JLabel("Chưa có dữ liệu chi tiêu tháng này", SwingConstants.CENTER);
-            lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            lblEmpty.setFont(AppFont.italic(13));
             lblEmpty.setForeground(UIManager.getColor("Label.disabledForeground"));
             chartContainer.add(lblEmpty, BorderLayout.CENTER);
         } else {
@@ -213,12 +242,11 @@ public class DashboardPanel extends JPanel {
                     false
             );
 
-            // Styling chart
             chart.setBackgroundPaint(null);
             PiePlot plot = (PiePlot) chart.getPlot();
             plot.setBackgroundPaint(null);
             plot.setOutlinePaint(null);
-            plot.setLabelFont(new Font("Segoe UI", Font.PLAIN, 11));
+            plot.setLabelFont(AppFont.plain(11));
             plot.setShadowPaint(null);
 
             ChartPanel chartPanel = new ChartPanel(chart);
@@ -235,7 +263,7 @@ public class DashboardPanel extends JPanel {
 
         if (budgets.isEmpty()) {
             JLabel lblEmpty = new JLabel("Chưa có hạn mức ngân sách tháng này", SwingConstants.CENTER);
-            lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            lblEmpty.setFont(AppFont.italic(13));
             lblEmpty.setForeground(UIManager.getColor("Label.disabledForeground"));
             lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
             lblEmpty.setBorder(new EmptyBorder(30, 0, 0, 0));
@@ -244,16 +272,16 @@ public class DashboardPanel extends JPanel {
             for (Budget b : budgets) {
                 JPanel item = new JPanel(new BorderLayout(5, 5));
                 item.setOpaque(false);
-                item.setBorder(new EmptyBorder(8, 12, 8, 12));
+                item.setBorder(new EmptyBorder(6, 8, 6, 8));
 
                 JLabel lblName = new JLabel(b.getCategoryName());
-                lblName.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                lblName.setFont(AppFont.bold(13));
 
                 JLabel lblAmount = new JLabel(String.format("%s / %s (%.0f%%)",
                         CurrencyFormatter.formatVND(b.getSpentAmount()),
                         CurrencyFormatter.formatVND(b.getAmountLimit()),
                         b.getProgressPercentage()));
-                lblAmount.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                lblAmount.setFont(AppFont.plain(12));
 
                 JProgressBar bar = new JProgressBar(0, 100);
                 int progress = (int) Math.round(b.getProgressPercentage());
@@ -261,11 +289,11 @@ public class DashboardPanel extends JPanel {
                 bar.setStringPainted(true);
 
                 if (progress >= 100) {
-                    bar.setForeground(new Color(229, 57, 53)); // Đỏ
+                    bar.setForeground(new Color(229, 57, 53));
                 } else if (progress >= 80) {
-                    bar.setForeground(new Color(255, 179, 0)); // Vàng cam
+                    bar.setForeground(new Color(255, 179, 0));
                 } else {
-                    bar.setForeground(new Color(67, 160, 71)); // Xanh lá
+                    bar.setForeground(new Color(67, 160, 71));
                 }
 
                 item.add(lblName, BorderLayout.WEST);
@@ -273,7 +301,7 @@ public class DashboardPanel extends JPanel {
                 item.add(bar, BorderLayout.SOUTH);
 
                 budgetContainer.add(item);
-                budgetContainer.add(Box.createVerticalStrut(5));
+                budgetContainer.add(Box.createVerticalStrut(4));
             }
         }
         budgetContainer.revalidate();
@@ -282,9 +310,9 @@ public class DashboardPanel extends JPanel {
 
     private void updateRecentTransactions() {
         tableModel.setRowCount(0);
-        List<Transaction> transactions = transactionDAO.getRecentTransactions(8);
+        List<Transaction> recent = transactionDAO.getRecentTransactions(8);
 
-        for (Transaction tx : transactions) {
+        for (Transaction tx : recent) {
             String typeStr;
             String amountFormatted;
 
@@ -299,16 +327,11 @@ public class DashboardPanel extends JPanel {
                 amountFormatted = CurrencyFormatter.formatVND(tx.getAmount());
             }
 
-            String catStr = (tx.getCategoryName() != null) ? tx.getCategoryName() : "—";
-            String walletStr = (tx.getType() == TransactionType.TRANSFER) 
-                    ? (tx.getWalletName() + " ➔ " + (tx.getToWalletName() != null ? tx.getToWalletName() : "?"))
-                    : tx.getWalletName();
-
             tableModel.addRow(new Object[]{
                     tx.getTransactionDate(),
                     typeStr,
-                    catStr,
-                    walletStr,
+                    (tx.getCategoryName() != null) ? tx.getCategoryName() : "—",
+                    (tx.getWalletName() != null) ? tx.getWalletName() : "—",
                     amountFormatted,
                     (tx.getNote() != null) ? tx.getNote() : ""
             });

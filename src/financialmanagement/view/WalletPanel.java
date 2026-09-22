@@ -3,7 +3,9 @@ package financialmanagement.view;
 import financialmanagement.dao.WalletDAO;
 import financialmanagement.model.Wallet;
 import financialmanagement.model.WalletType;
+import financialmanagement.util.AppFont;
 import financialmanagement.util.CurrencyFormatter;
+import financialmanagement.util.IconHelper;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,7 +26,7 @@ public class WalletPanel extends JPanel {
         this.onDataChangedCallback = onDataChangedCallback;
 
         setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(16, 20, 16, 20));
 
         initComponents();
         refreshData();
@@ -35,13 +37,13 @@ public class WalletPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 2));
         titleBox.setOpaque(false);
         JLabel lblTitle = new JLabel("Ví & Tài Khoản Tiền");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(AppFont.bold(21));
 
         JLabel lblSub = new JLabel("Quản lý dòng tiền trên từng tài khoản ngân hàng, ví điện tử, tiền mặt");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setFont(AppFont.plain(12));
         lblSub.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         titleBox.add(lblTitle);
@@ -50,8 +52,8 @@ public class WalletPanel extends JPanel {
         JPanel actionButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         actionButtons.setOpaque(false);
 
-        JButton btnTransfer = new JButton("💸 Chuyển Tiền");
-        btnTransfer.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        JButton btnTransfer = new JButton("Chuyển Tiền");
+        btnTransfer.setFont(AppFont.bold(13));
         btnTransfer.putClientProperty("JButton.buttonType", "roundRect");
         btnTransfer.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTransfer.addActionListener(e -> {
@@ -63,7 +65,7 @@ public class WalletPanel extends JPanel {
         });
 
         JButton btnAddWallet = new JButton("+ Thêm Ví Mới");
-        btnAddWallet.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAddWallet.setFont(AppFont.bold(13));
         btnAddWallet.putClientProperty("JButton.buttonType", "roundRect");
         btnAddWallet.setBackground(new Color(33, 150, 243));
         btnAddWallet.setForeground(Color.WHITE);
@@ -90,11 +92,11 @@ public class WalletPanel extends JPanel {
         ));
 
         lblTotalBalance = new JLabel("Tổng tài sản: 0 ₫");
-        lblTotalBalance.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTotalBalance.setFont(AppFont.bold(16));
         lblTotalBalance.setForeground(new Color(33, 150, 243));
 
         lblWalletCount = new JLabel("Số lượng ví: 0");
-        lblWalletCount.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblWalletCount.setFont(AppFont.plain(14));
         lblWalletCount.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         summaryBar.add(lblTotalBalance);
@@ -108,8 +110,7 @@ public class WalletPanel extends JPanel {
         add(northGroup, BorderLayout.NORTH);
 
         // 3. Grid Container of Wallet Cards
-        gridContainer = new JPanel();
-        gridContainer.setLayout(new GridLayout(0, 3, 15, 15)); // 3 columns, dynamic rows
+        gridContainer = new JPanel(new GridLayout(0, 3, 15, 15));
         gridContainer.setOpaque(false);
 
         JScrollPane scrollPane = new JScrollPane(gridContainer);
@@ -129,8 +130,15 @@ public class WalletPanel extends JPanel {
         lblTotalBalance.setText("Tổng tài sản: " + CurrencyFormatter.formatVND(total));
         lblWalletCount.setText("Số lượng ví: " + wallets.size() + " ví");
 
-        for (Wallet w : wallets) {
-            gridContainer.add(createWalletCard(w));
+        if (wallets.isEmpty()) {
+            JLabel lblEmpty = new JLabel("Chưa có ví nào. Hãy bấm \"+ Thêm Ví Mới\" để bắt đầu!", SwingConstants.CENTER);
+            lblEmpty.setFont(AppFont.italic(14));
+            lblEmpty.setForeground(UIManager.getColor("Label.disabledForeground"));
+            gridContainer.add(lblEmpty);
+        } else {
+            for (Wallet w : wallets) {
+                gridContainer.add(createWalletCard(w));
+            }
         }
 
         gridContainer.revalidate();
@@ -140,20 +148,20 @@ public class WalletPanel extends JPanel {
     private JPanel createWalletCard(Wallet wallet) {
         JPanel card = new JPanel(new BorderLayout(10, 12));
         Color accentColor;
-        String iconEmoji;
+        String iconGlyph;
 
         if (wallet.getType() == WalletType.CASH) {
             accentColor = new Color(76, 175, 80); // Xanh lá
-            iconEmoji = "💵";
+            iconGlyph = IconHelper.ATTACH_MONEY;
         } else if (wallet.getType() == WalletType.BANK) {
             accentColor = new Color(33, 150, 243); // Xanh dương
-            iconEmoji = "🏦";
+            iconGlyph = IconHelper.ACCOUNT_BALANCE;
         } else if (wallet.getType() == WalletType.E_WALLET) {
             accentColor = new Color(233, 30, 99); // Hồng / Momo
-            iconEmoji = "📱";
+            iconGlyph = IconHelper.PHONE_ANDROID;
         } else {
             accentColor = new Color(156, 39, 176); // Tím
-            iconEmoji = "💳";
+            iconGlyph = IconHelper.CREDIT_CARD;
         }
 
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -161,24 +169,27 @@ public class WalletPanel extends JPanel {
                 new EmptyBorder(16, 18, 14, 18)
         ));
 
-        // Header: Emoji + Type Name
-        JPanel top = new JPanel(new BorderLayout());
+        // Header: Icon + Type Name
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         top.setOpaque(false);
 
-        JLabel lblIcon = new JLabel(iconEmoji + "  " + wallet.getType().getDisplayName().toUpperCase());
-        lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblIcon.setForeground(accentColor);
-        top.add(lblIcon, BorderLayout.WEST);
+        JLabel lblIcon = IconHelper.createIcon(iconGlyph, 18, accentColor);
+        JLabel lblType = new JLabel(wallet.getType().getDisplayName().toUpperCase());
+        lblType.setFont(AppFont.bold(11));
+        lblType.setForeground(accentColor);
+
+        top.add(lblIcon);
+        top.add(lblType);
 
         // Center: Wallet Name + Big Balance
         JPanel center = new JPanel(new GridLayout(2, 1, 0, 4));
         center.setOpaque(false);
 
         JLabel lblName = new JLabel(wallet.getName());
-        lblName.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        lblName.setFont(AppFont.bold(16));
 
         JLabel lblBalance = new JLabel(CurrencyFormatter.formatVND(wallet.getBalance()));
-        lblBalance.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblBalance.setFont(AppFont.bold(20));
         lblBalance.setForeground(wallet.getBalance() >= 0 ? UIManager.getColor("Label.foreground") : new Color(229, 57, 53));
 
         center.add(lblName);
@@ -188,8 +199,8 @@ public class WalletPanel extends JPanel {
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         bottom.setOpaque(false);
 
-        JButton btnEdit = new JButton("✏️ Sửa");
-        btnEdit.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JButton btnEdit = new JButton("Sửa");
+        btnEdit.setFont(AppFont.plain(12));
         btnEdit.putClientProperty("JButton.buttonType", "roundRect");
         btnEdit.addActionListener(e -> {
             WalletDialog dialog = new WalletDialog(parentFrame, wallet, () -> {
@@ -199,9 +210,9 @@ public class WalletPanel extends JPanel {
             dialog.setVisible(true);
         });
 
-        JButton btnDelete = new JButton("🗑️");
+        JButton btnDelete = new JButton("Xóa");
         btnDelete.setToolTipText("Xóa ví");
-        btnDelete.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnDelete.setFont(AppFont.plain(12));
         btnDelete.putClientProperty("JButton.buttonType", "roundRect");
         btnDelete.setForeground(new Color(211, 47, 47));
         btnDelete.addActionListener(e -> deleteWallet(wallet));

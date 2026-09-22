@@ -3,6 +3,8 @@ package financialmanagement.view;
 import financialmanagement.dao.CategoryDAO;
 import financialmanagement.model.Category;
 import financialmanagement.model.TransactionType;
+import financialmanagement.util.AppFont;
+import financialmanagement.util.IconHelper;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,27 +28,27 @@ public class CategoryPanel extends JPanel {
     private JTable incomeTable;
     private DefaultTableModel incomeTableModel;
 
-    private static final Map<String, String> ICON_TO_EMOJI = new HashMap<>();
+    private static final Map<String, String> ICON_TO_GLYPH = new HashMap<>();
     static {
-        ICON_TO_EMOJI.put("food", "🍔");
-        ICON_TO_EMOJI.put("coffee", "☕");
-        ICON_TO_EMOJI.put("home", "🏠");
-        ICON_TO_EMOJI.put("bills", "💡");
-        ICON_TO_EMOJI.put("car", "🚗");
-        ICON_TO_EMOJI.put("shopping", "🛍️");
-        ICON_TO_EMOJI.put("entertainment", "🎮");
-        ICON_TO_EMOJI.put("medical", "💊");
-        ICON_TO_EMOJI.put("education", "🎓");
-        ICON_TO_EMOJI.put("travel", "✈️");
-        ICON_TO_EMOJI.put("tech", "📱");
-        ICON_TO_EMOJI.put("sport", "🏋️");
-        ICON_TO_EMOJI.put("pet", "🐾");
-        ICON_TO_EMOJI.put("beauty", "👗");
-        ICON_TO_EMOJI.put("salary", "💵");
-        ICON_TO_EMOJI.put("bonus", "🎁");
-        ICON_TO_EMOJI.put("investment", "📈");
-        ICON_TO_EMOJI.put("side_income", "💼");
-        ICON_TO_EMOJI.put("other", "🏷️");
+        ICON_TO_GLYPH.put("food", IconHelper.FOOD);
+        ICON_TO_GLYPH.put("coffee", IconHelper.COFFEE);
+        ICON_TO_GLYPH.put("home", IconHelper.HOME);
+        ICON_TO_GLYPH.put("bills", IconHelper.BILLS);
+        ICON_TO_GLYPH.put("car", IconHelper.CAR);
+        ICON_TO_GLYPH.put("shopping", IconHelper.SHOPPING);
+        ICON_TO_GLYPH.put("entertainment", IconHelper.ENTERTAINMENT);
+        ICON_TO_GLYPH.put("medical", IconHelper.MEDICAL);
+        ICON_TO_GLYPH.put("education", IconHelper.EDUCATION);
+        ICON_TO_GLYPH.put("travel", IconHelper.TRAVEL);
+        ICON_TO_GLYPH.put("tech", IconHelper.TECH);
+        ICON_TO_GLYPH.put("sport", IconHelper.SPORT);
+        ICON_TO_GLYPH.put("pet", IconHelper.PET);
+        ICON_TO_GLYPH.put("beauty", IconHelper.BEAUTY);
+        ICON_TO_GLYPH.put("salary", IconHelper.SALARY);
+        ICON_TO_GLYPH.put("bonus", IconHelper.BONUS);
+        ICON_TO_GLYPH.put("investment", IconHelper.INVESTMENT);
+        ICON_TO_GLYPH.put("side_income", IconHelper.WORK);
+        ICON_TO_GLYPH.put("other", IconHelper.OTHER);
     }
 
     public CategoryPanel(Frame parentFrame, Runnable onDataChangedCallback) {
@@ -54,7 +56,7 @@ public class CategoryPanel extends JPanel {
         this.onDataChangedCallback = onDataChangedCallback;
 
         setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(16, 20, 16, 20));
 
         initComponents();
         refreshData();
@@ -65,20 +67,20 @@ public class CategoryPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 2));
         titleBox.setOpaque(false);
         JLabel lblTitle = new JLabel("Danh Mục Thu & Chi");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(AppFont.bold(21));
 
         JLabel lblSub = new JLabel("Phân loại các khoản chi tiêu và nguồn thu nhập cá nhân");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setFont(AppFont.plain(12));
         lblSub.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         titleBox.add(lblTitle);
         titleBox.add(lblSub);
 
         JButton btnAdd = new JButton("+ Thêm Danh Mục");
-        btnAdd.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAdd.setFont(AppFont.bold(13));
         btnAdd.putClientProperty("JButton.buttonType", "roundRect");
         btnAdd.setBackground(new Color(33, 150, 243));
         btnAdd.setForeground(Color.WHITE);
@@ -97,7 +99,7 @@ public class CategoryPanel extends JPanel {
 
         // 2. Tabs: Chi tiêu / Thu nhập
         tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabbedPane.setFont(AppFont.plain(13));
 
         expenseTableModel = createTableModel();
         expenseTable = createTable(expenseTableModel, TransactionType.EXPENSE);
@@ -107,8 +109,8 @@ public class CategoryPanel extends JPanel {
         incomeTable = createTable(incomeTableModel, TransactionType.INCOME);
         JScrollPane scrollIncome = new JScrollPane(incomeTable);
 
-        tabbedPane.addTab("💸 Chi Tiêu (Expense)", scrollExpense);
-        tabbedPane.addTab("💰 Thu Nhập (Income)", scrollIncome);
+        tabbedPane.addTab("Chi Tiêu (Expense)", scrollExpense);
+        tabbedPane.addTab("Thu Nhập (Income)", scrollIncome);
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -116,16 +118,19 @@ public class CategoryPanel extends JPanel {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         bottomPanel.setOpaque(false);
 
-        JButton btnEdit = new JButton("✏️ Sửa danh mục");
+        JButton btnEdit = new JButton("Sửa danh mục");
+        btnEdit.setFont(AppFont.plain(13));
         btnEdit.putClientProperty("JButton.buttonType", "roundRect");
         btnEdit.addActionListener(e -> editSelectedCategory());
 
-        JButton btnDelete = new JButton("🗑️ Xóa danh mục");
+        JButton btnDelete = new JButton("Xóa danh mục");
+        btnDelete.setFont(AppFont.plain(13));
         btnDelete.putClientProperty("JButton.buttonType", "roundRect");
         btnDelete.setForeground(new Color(211, 47, 47));
         btnDelete.addActionListener(e -> deleteSelectedCategory());
 
-        JButton btnRefresh = new JButton("🔄 Làm mới");
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setFont(AppFont.plain(13));
         btnRefresh.putClientProperty("JButton.buttonType", "roundRect");
         btnRefresh.addActionListener(e -> refreshData());
 
@@ -137,7 +142,7 @@ public class CategoryPanel extends JPanel {
     }
 
     private DefaultTableModel createTableModel() {
-        String[] columns = {"Mã", "Biểu tượng", "Tên danh mục", "Màu sắc", "Số mục liên kết"};
+        String[] columns = {"Mã", "Icon", "Tên danh mục", "Màu sắc", "Số mục liên kết"};
         return new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -149,22 +154,28 @@ public class CategoryPanel extends JPanel {
     private JTable createTable(DefaultTableModel model, TransactionType type) {
         JTable t = new JTable(model);
         t.setRowHeight(36);
-        t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        t.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        t.setFont(AppFont.plain(13));
+        t.getTableHeader().setFont(AppFont.bold(13));
         t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         t.setFillsViewportHeight(true);
 
         t.getColumnModel().getColumn(0).setMaxWidth(60);
-        t.getColumnModel().getColumn(1).setPreferredWidth(80);
+        t.getColumnModel().getColumn(1).setPreferredWidth(60);
+        t.getColumnModel().getColumn(1).setMaxWidth(80);
         t.getColumnModel().getColumn(2).setPreferredWidth(250);
         t.getColumnModel().getColumn(3).setPreferredWidth(120);
         t.getColumnModel().getColumn(4).setPreferredWidth(130);
 
-        // Center emoji column
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        centerRenderer.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
-        t.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        // Material Icon renderer
+        t.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setFont(IconHelper.getIconFont(20));
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return c;
+            }
+        });
 
         // Color renderer
         t.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
@@ -187,7 +198,7 @@ public class CategoryPanel extends JPanel {
                 dot.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
 
                 JLabel lblHex = new JLabel(hex);
-                lblHex.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                lblHex.setFont(AppFont.plain(12));
                 if (isSelected) lblHex.setForeground(table.getSelectionForeground());
 
                 p.add(dot);
@@ -219,11 +230,11 @@ public class CategoryPanel extends JPanel {
         List<Category> list = categoryDAO.getCategoriesByType(type);
 
         for (Category c : list) {
-            String emoji = ICON_TO_EMOJI.getOrDefault(c.getIcon(), "🏷️");
+            String glyph = ICON_TO_GLYPH.getOrDefault(c.getIcon(), IconHelper.OTHER);
             int usage = categoryDAO.countUsage(c.getId());
             model.addRow(new Object[]{
                     c.getId(),
-                    emoji,
+                    glyph,
                     c.getName(),
                     c.getColor() != null ? c.getColor() : "#2196F3",
                     usage > 0 ? usage + " mục" : "Chưa có"
@@ -293,4 +304,3 @@ public class CategoryPanel extends JPanel {
         }
     }
 }
-

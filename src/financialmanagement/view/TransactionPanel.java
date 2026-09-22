@@ -7,6 +7,7 @@ import financialmanagement.model.Category;
 import financialmanagement.model.Transaction;
 import financialmanagement.model.TransactionType;
 import financialmanagement.model.Wallet;
+import financialmanagement.util.AppFont;
 import financialmanagement.util.CurrencyFormatter;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ public class TransactionPanel extends JPanel {
         this.onDataChangedCallback = onDataChangedCallback;
 
         setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(16, 20, 16, 20));
 
         initComponents();
         loadFilterData();
@@ -56,20 +57,20 @@ public class TransactionPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 2));
         titleBox.setOpaque(false);
         JLabel lblTitle = new JLabel("Sổ Giao Dịch");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(AppFont.bold(21));
 
         JLabel lblSub = new JLabel("Lịch sử chi tiết các khoản thu, chi và chuyển khoản");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setFont(AppFont.plain(12));
         lblSub.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         titleBox.add(lblTitle);
         titleBox.add(lblSub);
 
         JButton btnAdd = new JButton("+ Thêm Giao Dịch");
-        btnAdd.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAdd.setFont(AppFont.bold(13));
         btnAdd.putClientProperty("JButton.buttonType", "roundRect");
         btnAdd.setBackground(new Color(33, 150, 243));
         btnAdd.setForeground(Color.WHITE);
@@ -144,8 +145,8 @@ public class TransactionPanel extends JPanel {
 
         table = new JTable(tableModel);
         table.setRowHeight(32);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.setFont(AppFont.plain(13));
+        table.getTableHeader().setFont(AppFont.bold(13));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setFillsViewportHeight(true);
 
@@ -193,18 +194,18 @@ public class TransactionPanel extends JPanel {
         summaryPanel.setOpaque(false);
 
         lblCount = new JLabel("Tổng: 0 giao dịch");
-        lblCount.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblCount.setFont(AppFont.bold(13));
 
         lblTotalIncome = new JLabel("Thu: 0 ₫");
-        lblTotalIncome.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblTotalIncome.setFont(AppFont.bold(13));
         lblTotalIncome.setForeground(new Color(46, 125, 50));
 
         lblTotalExpense = new JLabel("Chi: 0 ₫");
-        lblTotalExpense.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblTotalExpense.setFont(AppFont.bold(13));
         lblTotalExpense.setForeground(new Color(198, 40, 40));
 
         lblNetCashflow = new JLabel("Dòng tiền: 0 ₫");
-        lblNetCashflow.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblNetCashflow.setFont(AppFont.bold(13));
         lblNetCashflow.setForeground(new Color(33, 150, 243));
 
         summaryPanel.add(lblCount);

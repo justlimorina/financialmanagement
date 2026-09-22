@@ -7,6 +7,7 @@ import financialmanagement.model.Category;
 import financialmanagement.model.Transaction;
 import financialmanagement.model.TransactionType;
 import financialmanagement.model.Wallet;
+import financialmanagement.util.AppFont;
 import financialmanagement.util.CurrencyFormatter;
 
 import javax.swing.*;
@@ -134,7 +135,7 @@ public class TransactionDialog extends JDialog {
         btnCancel.addActionListener(e -> dispose());
 
         JButton btnSave = new JButton(transactionToEdit == null ? "Lưu Giao Dịch" : "Lưu Thay Đổi");
-        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSave.setFont(AppFont.bold(13));
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
         btnSave.setBackground(new Color(33, 150, 243));
         btnSave.setForeground(Color.WHITE);

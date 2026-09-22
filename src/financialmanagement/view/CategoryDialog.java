@@ -3,6 +3,7 @@ package financialmanagement.view;
 import financialmanagement.dao.CategoryDAO;
 import financialmanagement.model.Category;
 import financialmanagement.model.TransactionType;
+import financialmanagement.util.AppFont;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,25 +24,25 @@ public class CategoryDialog extends JDialog {
 
     private static final Map<String, String> ICON_MAP = new LinkedHashMap<>();
     static {
-        ICON_MAP.put("🍔 Ăn uống", "food");
-        ICON_MAP.put("☕ Cafe & Đồ uống", "coffee");
-        ICON_MAP.put("🏠 Nhà cửa & Thuê nhà", "home");
-        ICON_MAP.put("💡 Điện, Nước, Net", "bills");
-        ICON_MAP.put("🚗 Đi lại & Xăng xe", "car");
-        ICON_MAP.put("🛍️ Mua sắm", "shopping");
-        ICON_MAP.put("🎮 Giải trí & Xem phim", "entertainment");
-        ICON_MAP.put("💊 Y tế & Sức khỏe", "medical");
-        ICON_MAP.put("🎓 Giáo dục & Học tập", "education");
-        ICON_MAP.put("✈️ Du lịch", "travel");
-        ICON_MAP.put("📱 Công nghệ & Thiết bị", "tech");
-        ICON_MAP.put("🏋️ Thể thao & Gym", "sport");
-        ICON_MAP.put("🐾 Thú cưng", "pet");
-        ICON_MAP.put("👗 Thời trang & Mỹ phẩm", "beauty");
-        ICON_MAP.put("💵 Tiền lương", "salary");
-        ICON_MAP.put("🎁 Tiền thưởng", "bonus");
-        ICON_MAP.put("📈 Đầu tư & Sinh lời", "investment");
-        ICON_MAP.put("💼 Thu nhập phụ / Freelance", "side_income");
-        ICON_MAP.put("🏷️ Khác", "other");
+        ICON_MAP.put("Ăn uống (Fastfood)", "food");
+        ICON_MAP.put("Cafe & Đồ uống (Cafe)", "coffee");
+        ICON_MAP.put("Nhà cửa & Thuê nhà (Home)", "home");
+        ICON_MAP.put("Điện, Nước, Net (Bills)", "bills");
+        ICON_MAP.put("Đi lại & Xăng xe (Transport)", "car");
+        ICON_MAP.put("Mua sắm (Shopping)", "shopping");
+        ICON_MAP.put("Giải trí & Xem phim (Entertainment)", "entertainment");
+        ICON_MAP.put("Y tế & Sức khỏe (Medical)", "medical");
+        ICON_MAP.put("Giáo dục & Học tập (Education)", "education");
+        ICON_MAP.put("Du lịch (Travel)", "travel");
+        ICON_MAP.put("Công nghệ & Thiết bị (Tech)", "tech");
+        ICON_MAP.put("Thể thao & Gym (Sport)", "sport");
+        ICON_MAP.put("Thú cưng (Pets)", "pet");
+        ICON_MAP.put("Thời trang & Mỹ phẩm (Fashion)", "beauty");
+        ICON_MAP.put("Tiền lương (Salary)", "salary");
+        ICON_MAP.put("Tiền thưởng (Bonus)", "bonus");
+        ICON_MAP.put("Đầu tư & Sinh lời (Investment)", "investment");
+        ICON_MAP.put("Thu nhập phụ / Freelance (Work)", "side_income");
+        ICON_MAP.put("Khác (General)", "other");
     }
 
     private static final String[] PRESET_COLORS = {
@@ -82,32 +83,47 @@ public class CategoryDialog extends JDialog {
 
         // 1. Tên danh mục
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
-        form.add(new JLabel("Tên danh mục:"), gbc);
+        JLabel lblName = new JLabel("Tên danh mục:");
+        lblName.setFont(AppFont.plain(13));
+        form.add(lblName, gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.7;
         txtName = new JTextField();
+        txtName.setFont(AppFont.plain(13));
         txtName.putClientProperty("JTextField.placeholderText", "Ví dụ: Ăn uống, Tiền nhà...");
         form.add(txtName, gbc);
 
         // 2. Loại danh mục (Chi tiêu / Thu nhập)
         row++;
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
-        form.add(new JLabel("Loại danh mục:"), gbc);
+        JLabel lblType = new JLabel("Loại danh mục:");
+        lblType.setFont(AppFont.plain(13));
+        form.add(lblType, gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.7;
         cbType = new JComboBox<>(new String[]{"Chi tiêu (EXPENSE)", "Thu nhập (INCOME)"});
+        cbType.setFont(AppFont.plain(13));
         form.add(cbType, gbc);
 
-        // 3. Biểu tượng (Icon / Emoji)
+        // 3. Biểu tượng (Icon)
         row++;
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
-        form.add(new JLabel("Biểu tượng:"), gbc);
+        JLabel lblIcon = new JLabel("Biểu tượng:");
+        lblIcon.setFont(AppFont.plain(13));
+        form.add(lblIcon, gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.7;
         cbIcon = new JComboBox<>(ICON_MAP.keySet().toArray(new String[0]));
+        cbIcon.setFont(AppFont.plain(13));
         form.add(cbIcon, gbc);
 
         // 4. Bảng màu (Color Picker)
         row++;
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
-        form.add(new JLabel("Màu nhận diện:"), gbc);
+        JLabel lblColor = new JLabel("Màu nhận diện:");
+        lblColor.setFont(AppFont.plain(13));
+        form.add(lblColor, gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.7;
 
         JPanel colorChooserPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
@@ -119,6 +135,7 @@ public class CategoryDialog extends JDialog {
         colorPreview.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
 
         JButton btnChooseColor = new JButton("Chọn màu...");
+        btnChooseColor.setFont(AppFont.plain(12));
         btnChooseColor.putClientProperty("JButton.buttonType", "roundRect");
         btnChooseColor.addActionListener(e -> {
             Color chosen = JColorChooser.showDialog(this, "Chọn màu cho danh mục", Color.decode(selectedColor));
@@ -159,11 +176,12 @@ public class CategoryDialog extends JDialog {
         btnPanel.setOpaque(false);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setFont(AppFont.plain(13));
         btnCancel.putClientProperty("JButton.buttonType", "roundRect");
         btnCancel.addActionListener(e -> dispose());
 
         JButton btnSave = new JButton(categoryToEdit == null ? "Tạo Danh Mục" : "Lưu Thay Đổi");
-        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSave.setFont(AppFont.bold(13));
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
         btnSave.setBackground(new Color(33, 150, 243));
         btnSave.setForeground(Color.WHITE);
@@ -210,7 +228,7 @@ public class CategoryDialog extends JDialog {
 
         TransactionType type = cbType.getSelectedIndex() == 0 ? TransactionType.EXPENSE : TransactionType.INCOME;
         String selectedIconLabel = (String) cbIcon.getSelectedItem();
-        String iconKey = ICON_MAP.getOrDefault(selectedIconLabel, "tag");
+        String iconKey = ICON_MAP.getOrDefault(selectedIconLabel, "other");
 
         boolean success;
         if (categoryToEdit == null) {
@@ -237,4 +255,3 @@ public class CategoryDialog extends JDialog {
         }
     }
 }
-

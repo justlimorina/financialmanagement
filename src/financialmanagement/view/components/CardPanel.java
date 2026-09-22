@@ -1,5 +1,8 @@
 package financialmanagement.view.components;
 
+import financialmanagement.util.AppFont;
+import financialmanagement.util.IconHelper;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -9,22 +12,21 @@ public class CardPanel extends JPanel {
     private final JLabel lblValue;
     private final JLabel lblSubtitle;
 
-    public CardPanel(String title, String initialValue, String subtitle, Color accentColor, String iconEmoji) {
+    public CardPanel(String title, String initialValue, String subtitle, Color accentColor, String iconGlyph) {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 60), 1, true),
-                new EmptyBorder(15, 18, 15, 18)
+                BorderFactory.createLineBorder(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 75), 1, true),
+                new EmptyBorder(16, 18, 16, 18)
         ));
 
         // Header panel: Icon + Title
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         headerPanel.setOpaque(false);
 
-        JLabel lblIcon = new JLabel(iconEmoji);
-        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
+        JLabel lblIcon = IconHelper.createIcon(iconGlyph, 22, accentColor);
 
         lblTitle = new JLabel(title.toUpperCase());
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblTitle.setFont(AppFont.bold(12));
         lblTitle.setForeground(accentColor);
 
         headerPanel.add(lblIcon);
@@ -32,11 +34,11 @@ public class CardPanel extends JPanel {
 
         // Center: Value
         lblValue = new JLabel(initialValue);
-        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblValue.setFont(AppFont.bold(25));
 
         // Footer: Subtitle
         lblSubtitle = new JLabel(subtitle);
-        lblSubtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSubtitle.setFont(AppFont.plain(13));
         lblSubtitle.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         add(headerPanel, BorderLayout.NORTH);

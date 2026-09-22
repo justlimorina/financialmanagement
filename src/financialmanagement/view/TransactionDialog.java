@@ -20,6 +20,9 @@ public class TransactionDialog extends JDialog {
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private final TransactionDAO transactionDAO = new TransactionDAO();
 
+    private final Transaction transactionToEdit;
+    private final Runnable onSuccessCallback;
+
     private JComboBox<String> cbType;
     private JComboBox<Wallet> cbWallet;
     private JComboBox<Wallet> cbToWallet;
@@ -31,14 +34,18 @@ public class TransactionDialog extends JDialog {
     private JLabel lblToWallet;
     private JLabel lblCategory;
 
-    private final Runnable onSuccessCallback;
-
     public TransactionDialog(Frame parent, Runnable onSuccessCallback) {
-        super(parent, "Thêm Giao Dịch Mới", true);
+        this(parent, null, onSuccessCallback);
+    }
+
+    public TransactionDialog(Frame parent, Transaction transactionToEdit, Runnable onSuccessCallback) {
+        super(parent, transactionToEdit == null ? "Thêm Giao Dịch Mới" : "Chỉnh Sửa Giao Dịch #" + transactionToEdit.getId(), true);
+        this.transactionToEdit = transactionToEdit;
         this.onSuccessCallback = onSuccessCallback;
 
         initComponents();
         loadData();
+        populateDataIfEditing();
 
         setSize(480, 520);
         setLocationRelativeTo(parent);
@@ -123,9 +130,11 @@ public class TransactionDialog extends JDialog {
         // Buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton btnCancel = new JButton("Hủy bỏ");
+        btnCancel.putClientProperty("JButton.buttonType", "roundRect");
         btnCancel.addActionListener(e -> dispose());
 
-        JButton btnSave = new JButton("Lưu Giao Dịch");
+        JButton btnSave = new JButton(transactionToEdit == null ? "Lưu Giao Dịch" : "Lưu Thay Đổi");
+        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnSave.putClientProperty("JButton.buttonType", "roundRect");
         btnSave.setBackground(new Color(33, 150, 243));
         btnSave.setForeground(Color.WHITE);
@@ -149,6 +158,67 @@ public class TransactionDialog extends JDialog {
         }
 
         onTypeChanged();
+    }
+
+    private void populateDataIfEditing() {
+        if (transactionToEdit == null) return;
+
+        // 1. Set type
+        if (transactionToEdit.getType() == TransactionType.EXPENSE) {
+            cbType.setSelectedIndex(0);
+        } else if (transactionToEdit.getType() == TransactionType.INCOME) {
+            cbType.setSelectedIndex(1);
+        } else {
+            cbType.setSelectedIndex(2);
+        }
+        onTypeChanged();
+
+        // 2. Set amount
+        long amtLong = (long) transactionToEdit.getAmount();
+        if (transactionToEdit.getAmount() == amtLong) {
+            txtAmount.setText(String.valueOf(amtLong));
+        } else {
+            txtAmount.setText(String.valueOf(transactionToEdit.getAmount()));
+        }
+
+        // 3. Set wallet
+        for (int i = 0; i < cbWallet.getItemCount(); i++) {
+            Wallet w = cbWallet.getItemAt(i);
+            if (w.getId() == transactionToEdit.getWalletId()) {
+                cbWallet.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        // 4. Set to_wallet (for transfer)
+        if (transactionToEdit.getToWalletId() != null) {
+            for (int i = 0; i < cbToWallet.getItemCount(); i++) {
+                Wallet w = cbToWallet.getItemAt(i);
+                if (w.getId() == transactionToEdit.getToWalletId()) {
+                    cbToWallet.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        // 5. Set category
+        if (transactionToEdit.getCategoryId() != null) {
+            for (int i = 0; i < cbCategory.getItemCount(); i++) {
+                Category c = cbCategory.getItemAt(i);
+                if (c.getId() == transactionToEdit.getCategoryId()) {
+                    cbCategory.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        // 6. Set date & note
+        if (transactionToEdit.getTransactionDate() != null) {
+            txtDate.setText(transactionToEdit.getTransactionDate());
+        }
+        if (transactionToEdit.getNote() != null) {
+            txtNote.setText(transactionToEdit.getNote());
+        }
     }
 
     private void onTypeChanged() {
@@ -220,12 +290,27 @@ public class TransactionDialog extends JDialog {
 
         String note = txtNote.getText().trim();
 
-        // 3. Tạo Transaction và lưu vào DAO
-        Transaction tx = new Transaction(selectedWallet.getId(), categoryId, amount, type, toWalletId, date, note);
-        boolean success = transactionDAO.addTransaction(tx);
+        boolean success;
+        if (transactionToEdit == null) {
+            // Thêm mới
+            Transaction tx = new Transaction(selectedWallet.getId(), categoryId, amount, type, toWalletId, date, note);
+            success = transactionDAO.addTransaction(tx);
+        } else {
+            // Chỉnh sửa
+            transactionToEdit.setWalletId(selectedWallet.getId());
+            transactionToEdit.setCategoryId(categoryId);
+            transactionToEdit.setAmount(amount);
+            transactionToEdit.setType(type);
+            transactionToEdit.setToWalletId(toWalletId);
+            transactionToEdit.setTransactionDate(date);
+            transactionToEdit.setNote(note);
+            success = transactionDAO.updateTransaction(transactionToEdit);
+        }
 
         if (success) {
-            JOptionPane.showMessageDialog(this, "Đã thêm giao dịch thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    transactionToEdit == null ? "Đã thêm giao dịch thành công!" : "Đã cập nhật giao dịch thành công!",
+                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
             dispose();
             if (onSuccessCallback != null) {
                 onSuccessCallback.run();

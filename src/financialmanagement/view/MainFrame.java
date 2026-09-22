@@ -19,6 +19,7 @@ public class MainFrame extends JFrame {
     private DashboardPanel dashboardPanel;
     private TransactionPanel transactionPanel;
     private WalletPanel walletPanel;
+    private CategoryPanel categoryPanel;
     private BudgetPanel budgetPanel;
     private ReportPanel reportPanel;
 
@@ -47,6 +48,7 @@ public class MainFrame extends JFrame {
             if (dashboardPanel != null) dashboardPanel.refreshData();
             if (transactionPanel != null) transactionPanel.applyFilter();
             if (walletPanel != null) walletPanel.refreshData();
+            if (categoryPanel != null) categoryPanel.refreshData();
             if (budgetPanel != null) budgetPanel.refreshData();
             if (reportPanel != null) reportPanel.refreshData();
         };
@@ -54,12 +56,14 @@ public class MainFrame extends JFrame {
         dashboardPanel = new DashboardPanel(this);
         transactionPanel = new TransactionPanel(this, syncAll);
         walletPanel = new WalletPanel(this, syncAll);
+        categoryPanel = new CategoryPanel(this, syncAll);
         budgetPanel = new BudgetPanel(this, syncAll);
         reportPanel = new ReportPanel(this);
 
         contentCards.add(dashboardPanel, "DASHBOARD");
         contentCards.add(transactionPanel, "TRANSACTIONS");
         contentCards.add(walletPanel, "WALLETS");
+        contentCards.add(categoryPanel, "CATEGORIES");
         contentCards.add(budgetPanel, "BUDGETS");
         contentCards.add(reportPanel, "REPORTS");
 
@@ -93,6 +97,7 @@ public class MainFrame extends JFrame {
         JButton btnDash = createNavButton("📊  Tổng quan", "DASHBOARD", true);
         JButton btnTrans = createNavButton("💸  Sổ giao dịch", "TRANSACTIONS", false);
         JButton btnWallets = createNavButton("💳  Ví tài khoản", "WALLETS", false);
+        JButton btnCats = createNavButton("🏷️  Danh mục", "CATEGORIES", false);
         JButton btnBudgets = createNavButton("🎯  Ngân sách", "BUDGETS", false);
         JButton btnReports = createNavButton("📈  Báo cáo", "REPORTS", false);
 
@@ -101,6 +106,8 @@ public class MainFrame extends JFrame {
         menuPanel.add(btnTrans);
         menuPanel.add(Box.createVerticalStrut(5));
         menuPanel.add(btnWallets);
+        menuPanel.add(Box.createVerticalStrut(5));
+        menuPanel.add(btnCats);
         menuPanel.add(Box.createVerticalStrut(5));
         menuPanel.add(btnBudgets);
         menuPanel.add(Box.createVerticalStrut(5));
@@ -148,6 +155,8 @@ public class MainFrame extends JFrame {
                 transactionPanel.applyFilter();
             } else if ("WALLETS".equals(cardName)) {
                 walletPanel.refreshData();
+            } else if ("CATEGORIES".equals(cardName)) {
+                categoryPanel.refreshData();
             } else if ("BUDGETS".equals(cardName)) {
                 budgetPanel.refreshData();
             } else if ("REPORTS".equals(cardName)) {
@@ -191,6 +200,9 @@ public class MainFrame extends JFrame {
             }
             if (walletPanel != null) {
                 walletPanel.refreshData();
+            }
+            if (categoryPanel != null) {
+                categoryPanel.refreshData();
             }
             if (budgetPanel != null) {
                 budgetPanel.refreshData();

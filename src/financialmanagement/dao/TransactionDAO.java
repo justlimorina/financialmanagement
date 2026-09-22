@@ -201,6 +201,179 @@ public class TransactionDAO {
         }
     }
 
+    public Transaction getTransactionById(int id) {
+        String sql = """
+            SELECT t.*, 
+                   w.name AS wallet_name, 
+                   c.name AS category_name, c.color AS category_color,
+                   tw.name AS to_wallet_name
+            FROM transactions t
+            LEFT JOIN wallets w ON t.wallet_id = w.id
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN wallets tw ON t.to_wallet_id = tw.id
+            WHERE t.id = ?
+        """;
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToTransaction(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi getTransactionById: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean updateTransaction(Transaction newTx) {
+        String selectOldSql = "SELECT wallet_id, category_id, amount, type, to_wallet_id FROM transactions WHERE id = ?";
+        String updateBalanceSql = "UPDATE wallets SET balance = balance + ? WHERE id = ?";
+        String updateTxSql = """
+            UPDATE transactions 
+            SET wallet_id = ?, category_id = ?, amount = ?, type = ?, to_wallet_id = ?, transaction_date = ?, note = ?
+            WHERE id = ?
+        """;
+
+        Connection conn = null;
+        try {
+            conn = DatabaseHelper.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Lấy thông tin giao dịch cũ để hoàn tác (revert) số dư
+            int oldWalletId = 0;
+            Integer oldToWalletId = null;
+            double oldAmount = 0;
+            String oldTypeStr = null;
+
+            try (PreparedStatement ps = conn.prepareStatement(selectOldSql)) {
+                ps.setInt(1, newTx.getId());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        oldWalletId = rs.getInt("wallet_id");
+                        oldAmount = rs.getDouble("amount");
+                        oldTypeStr = rs.getString("type");
+                        int toId = rs.getInt("to_wallet_id");
+                        if (!rs.wasNull()) {
+                            oldToWalletId = toId;
+                        }
+                    } else {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            }
+
+            TransactionType oldType = TransactionType.fromString(oldTypeStr);
+
+            // 2. Hoàn lại số dư cũ
+            if (oldType == TransactionType.EXPENSE) {
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, oldAmount);
+                    ps.setInt(2, oldWalletId);
+                    ps.executeUpdate();
+                }
+            } else if (oldType == TransactionType.INCOME) {
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, -oldAmount);
+                    ps.setInt(2, oldWalletId);
+                    ps.executeUpdate();
+                }
+            } else if (oldType == TransactionType.TRANSFER && oldToWalletId != null) {
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, oldAmount);
+                    ps.setInt(2, oldWalletId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, -oldAmount);
+                    ps.setInt(2, oldToWalletId);
+                    ps.executeUpdate();
+                }
+            }
+
+            // 3. Áp dụng tác động số dư của giao dịch mới
+            if (newTx.getType() == TransactionType.EXPENSE) {
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, -newTx.getAmount());
+                    ps.setInt(2, newTx.getWalletId());
+                    ps.executeUpdate();
+                }
+            } else if (newTx.getType() == TransactionType.INCOME) {
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, newTx.getAmount());
+                    ps.setInt(2, newTx.getWalletId());
+                    ps.executeUpdate();
+                }
+            } else if (newTx.getType() == TransactionType.TRANSFER) {
+                if (newTx.getToWalletId() == null || newTx.getToWalletId().equals(newTx.getWalletId())) {
+                    conn.rollback();
+                    return false;
+                }
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, -newTx.getAmount());
+                    ps.setInt(2, newTx.getWalletId());
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(updateBalanceSql)) {
+                    ps.setDouble(1, newTx.getAmount());
+                    ps.setInt(2, newTx.getToWalletId());
+                    ps.executeUpdate();
+                }
+            }
+
+            // 4. Cập nhật bản ghi transactions
+            try (PreparedStatement ps = conn.prepareStatement(updateTxSql)) {
+                ps.setInt(1, newTx.getWalletId());
+                if (newTx.getCategoryId() != null) {
+                    ps.setInt(2, newTx.getCategoryId());
+                } else {
+                    ps.setNull(2, Types.INTEGER);
+                }
+                ps.setDouble(3, newTx.getAmount());
+                ps.setString(4, newTx.getType().name());
+                if (newTx.getToWalletId() != null) {
+                    ps.setInt(5, newTx.getToWalletId());
+                } else {
+                    ps.setNull(5, Types.INTEGER);
+                }
+                ps.setString(6, newTx.getTransactionDate());
+                ps.setString(7, newTx.getNote());
+                ps.setInt(8, newTx.getId());
+
+                int affected = ps.executeUpdate();
+                if (affected <= 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Lỗi updateTransaction: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Lỗi rollback: " + ex.getMessage());
+                }
+            }
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    System.err.println("Lỗi đóng connection: " + e.getMessage());
+                }
+            }
+        }
+    }
+
     public List<Transaction> getRecentTransactions(int limit) {
         List<Transaction> list = new ArrayList<>();
         String sql = """

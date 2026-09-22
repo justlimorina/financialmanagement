@@ -173,6 +173,15 @@ public class TransactionPanel extends JPanel {
             }
         });
 
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editSelectedTransaction();
+                }
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -208,6 +217,10 @@ public class TransactionPanel extends JPanel {
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         actionsPanel.setOpaque(false);
 
+        JButton btnEdit = new JButton("✏️ Sửa giao dịch");
+        btnEdit.putClientProperty("JButton.buttonType", "roundRect");
+        btnEdit.addActionListener(e -> editSelectedTransaction());
+
         JButton btnDelete = new JButton("🗑️ Xóa giao dịch");
         btnDelete.putClientProperty("JButton.buttonType", "roundRect");
         btnDelete.setForeground(new Color(211, 47, 47));
@@ -220,6 +233,7 @@ public class TransactionPanel extends JPanel {
             applyFilter();
         });
 
+        actionsPanel.add(btnEdit);
         actionsPanel.add(btnDelete);
         actionsPanel.add(btnRefresh);
 
@@ -321,6 +335,28 @@ public class TransactionPanel extends JPanel {
         cbCategoryFilter.setSelectedIndex(0);
         cbTypeFilter.setSelectedIndex(0);
         applyFilter();
+    }
+
+    private void editSelectedTransaction() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 giao dịch trong bảng để sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int txId = (int) tableModel.getValueAt(selectedRow, 0);
+        Transaction tx = transactionDAO.getTransactionById(txId);
+        if (tx != null) {
+            TransactionDialog dialog = new TransactionDialog(parentFrame, tx, () -> {
+                applyFilter();
+                if (onDataChangedCallback != null) {
+                    onDataChangedCallback.run();
+                }
+            });
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin giao dịch!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void deleteSelectedTransaction() {

@@ -111,6 +111,29 @@ public class CategoryDAO {
         return false;
     }
 
+    public int countUsage(int categoryId) {
+        int count = 0;
+        String sqlTx = "SELECT COUNT(*) FROM transactions WHERE category_id = ?";
+        String sqlBg = "SELECT COUNT(*) FROM budgets WHERE category_id = ?";
+        try (Connection conn = DatabaseHelper.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlTx)) {
+                ps.setInt(1, categoryId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) count += rs.getInt(1);
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(sqlBg)) {
+                ps.setInt(1, categoryId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) count += rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi countUsage: " + e.getMessage());
+        }
+        return count;
+    }
+
     private Category mapResultSetToCategory(ResultSet rs) throws SQLException {
         return new Category(
             rs.getInt("id"),
